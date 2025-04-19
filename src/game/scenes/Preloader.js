@@ -1,28 +1,20 @@
 export class Preloader extends Phaser.Scene {
     constructor() {
         super("Preloader");
-
-        this.loadText;
     }
 
     preload() {
         this.load.setBaseURL("http://localhost:8080");
-        this.loadText = this.add.text(512, 360, "Loading ...", {
-            fontFamily: "Arial",
-            fontSize: 74,
-            color: "#e3f2ed",
-        });
-        this.loadText.setOrigin(0.5);
-        this.loadText.setStroke("#203c5b", 6);
-        this.loadText.setShadow(2, 2, "#2d2d2d", 4, true, false);
 
         this.load.image("running-1", "assets/running-1.png");
         this.load.image("running-2", "assets/running-2.png");
         this.load.image("jumping", "assets/jumping.png");
+        this.load.image("cloud", "assets/cloud.png");
+        this.load.image("road", "assets/road.png");
     }
 
     create() {
-        //  Create our global animations
+
         this.anims.create({
             key: "running",
             frames: [{ key: "running-1" }, { key: "running-2" }],

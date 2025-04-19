@@ -3,17 +3,26 @@ import { GameObjects, Scene } from "phaser";
 import { EventBus } from "../EventBus";
 
 export class MainMenu extends Scene {
-    background: GameObjects.Image;
-    logo: GameObjects.Image;
-    title: GameObjects.Text;
-    logoTween: Phaser.Tweens.Tween | null;
+    loadText: GameObjects.Text;
 
     constructor() {
         super("MainMenu");
     }
 
+    preload () {
+        this.loadText = this.add.text(
+            this.cameras.main.centerX,
+            this.cameras.main.centerY,
+            "aperte espaço para começar",
+            {
+                fontFamily: "Arial",
+                fontSize: 32,
+            }
+        );
+        this.loadText.setOrigin(0.5, 0.5);
+    }
+
     create() {
-        // this.background = this.add.image(512, 384, "background");
         EventBus.emit("current-scene-ready", this);
 
         this.input.keyboard?.on("keyup", (event: KeyboardEvent) => {
@@ -21,6 +30,9 @@ export class MainMenu extends Scene {
                 this.changeScene();
             }
         });
+
+        // @TODO: remove this when mainmenu is ready
+        this.changeScene();
     }
 
     changeScene() {

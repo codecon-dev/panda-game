@@ -5,18 +5,18 @@ import { MainMenu } from "./scenes/MainMenu";
 import { AUTO, Game } from "phaser";
 import { Preloader } from "./scenes/Preloader";
 
-//  Find out more information about the Game Config at:
-//  https://newdocs.phaser.io/docs/3.70.0/Phaser.Types.Core.GameConfig
+export const GLOBAL_GRAVITY_Y = 300
+
 const config: Phaser.Types.Core.GameConfig = {
     type: AUTO,
     width: 640,
     height: 360,
     parent: "game-container",
-    backgroundColor: "#028af8",
+    backgroundColor: "#353946",
     physics: {
         default: "arcade",
         arcade: {
-            gravity: { x: 0, y: 300 },
+            gravity: { x: 0, y: GLOBAL_GRAVITY_Y },
             debug: false,
         },
     },

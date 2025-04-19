@@ -6,7 +6,6 @@ export class Boot extends Scene {
     }
 
     preload() {
-        this.load.image("sprites", "assets/sprite.png");
     }
 
     create() {
