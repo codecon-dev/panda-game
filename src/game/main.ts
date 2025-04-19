@@ -9,9 +9,13 @@ export const GLOBAL_GRAVITY_Y = 300
 
 const config: Phaser.Types.Core.GameConfig = {
     type: AUTO,
-    width: 640,
-    height: 360,
-    parent: "game-container",
+    scale: {
+        mode: Phaser.Scale.FIT,
+        parent: "game-container",
+        autoCenter: Phaser.Scale.CENTER_BOTH,
+        width: 640,
+        height: 360,
+    },
     backgroundColor: "#353946",
     physics: {
         default: "arcade",
