@@ -27,11 +27,6 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         this.play("running");
     }
 
-    start() {
-        this.isAlive = true;
-        this.play("running", true);
-    }
-
     jump() {
         if (
             this.body.touching.down ||
@@ -47,7 +42,9 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 
     crouch() {}
 
-    die() {}
+    die() {
+        this.isAlive = false
+    }
 
     update() {
         if (this.isAlive) {
