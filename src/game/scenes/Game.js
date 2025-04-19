@@ -3,9 +3,10 @@ import { Scene } from "phaser";
 import { EventBus } from "./../EventBus";
 
 import Player from "./../gameobjects/Player";
-import Cloud from "./../gameobjects/Cloud";
 import Road from "./../gameobjects/Road";
 import LadyBug from "./../gameobjects/LadyBug";
+
+import Background from "./../scenes/Background";
 
 export class Game extends Scene {
     constructor() {
@@ -22,6 +23,8 @@ export class Game extends Scene {
     }
 
     create() {
+
+        this.scene.launch('Background', Background)
 
         this.ground = new Road(this);
         this.player = new Player(this);
@@ -42,17 +45,6 @@ export class Game extends Scene {
         this.physics.add.collider(this.player, this.ground);
         this.physics.add.collider(this.obstacles, this.ground);
 
-        this.clouds = [];
-        for (let i = 0; i < 5; i++) {
-            const cloud = new Cloud(
-                this,
-                Phaser.Math.Between(100, this.scale.width),
-                Phaser.Math.Between(50, this.scale.height / 3),
-                "cloud"
-            );
-            this.clouds.push(cloud);
-        }
-
         this.obstaclesSpawnTimer = this.time.addEvent({
             delay: 2000,
             callback: this._spawnObstacle,
@@ -67,12 +59,10 @@ export class Game extends Scene {
         if (this.player.isAlive) {
             this.ground.update();
             this.player.update();
-            this.clouds.forEach((cloud) => cloud.update());
         }
     }
 
     _spawnObstacle() {
-        console.log('spawn')
         const ladyBug = this.obstacles.get(0, 0);
         ladyBug && ladyBug.spawn(
             this.scale.height - (this.ground.body.height * 4),
