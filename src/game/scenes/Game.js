@@ -15,13 +15,10 @@ export class Game extends Scene {
         this.ground;
         this.clouds;
         this.obstacles;
-        this.obstacleSpeed;
-        this.spawnTimer;
+
+        this.obstaclesSpawnTimer;
 
         this.obstacleSpeed = 200;
-    }
-
-    preload() {
     }
 
     create() {
@@ -37,7 +34,7 @@ export class Game extends Scene {
         this.physics.add.collider(
             this.player,
             this.obstacles,
-            this.handlePlayerObstacleCollision,
+            this._handlePlayerObstacleCollision,
             null,
             this
         );
@@ -56,53 +53,14 @@ export class Game extends Scene {
             this.clouds.push(cloud);
         }
 
-        this.spawnTimer = this.time.addEvent({
+        this.obstaclesSpawnTimer = this.time.addEvent({
             delay: 2000,
-            callback: this.spawnObstacle,
+            callback: this._spawnObstacle,
             callbackScope: this,
             loop: true,
         });
 
         EventBus.emit("current-scene-ready", this);
-    }
-
-    spawnObstacle() {
-        const ladyBug = this.obstacles.get(0, 0);
-        ladyBug && ladyBug.spawn(
-            this.scale.height - (this.ground.body.height * 4),
-            this.obstacleSpeed
-        );
-    }
-
-    handlePlayerObstacleCollision(player, obstacle) {
-        if (player.isAlive) {
-            player.die();
-            this.obstacleSpeed = 0;
-            this.spawnTimer.remove();
-            this.physics.pause();
-
-            this.time.delayedCall(1000, () => {
-                this.changeScene();
-            });
-        }
-    }
-
-    start() {
-        this.player.start();
-
-        this.obstacleSpeed = 200;
-
-        if (this.spawnTimer) {
-            this.spawnTimer.paused = false;
-         } else {
-             this.spawnTimer = this.time.addEvent({
-                delay: 2000,
-                callback: this.spawnObstacle,
-                callbackScope: this,
-                loop: true,
-            });
-        }
-        this.physics.resume();
     }
 
     update(time, delta) {
@@ -113,7 +71,22 @@ export class Game extends Scene {
         }
     }
 
-    changeScene() {
-        this.scene.start("GameOver");
+    _spawnObstacle() {
+        console.log('spawn')
+        const ladyBug = this.obstacles.get(0, 0);
+        ladyBug && ladyBug.spawn(
+            this.scale.height - (this.ground.body.height * 4),
+            this.obstacleSpeed
+        );
+    }
+
+    _handlePlayerObstacleCollision(player, obstacle) {
+        if (player.isAlive) {
+            player.die();
+            this.obstaclesSpawnTimer.remove();
+            this.time.delayedCall(1000, () => {
+                this.scene.start("GameOver");
+            });
+        }
     }
 }
