@@ -68,7 +68,6 @@ export class Game extends Scene {
 
     spawnObstacle() {
         const ladyBug = this.obstacles.get(0, 0);
-        console.log(ladyBug)
         ladyBug && ladyBug.spawn(
             this.scale.height - (this.ground.body.height * 4),
             this.obstacleSpeed
