@@ -7,30 +7,34 @@ export class GameOver extends Scene
     background: Phaser.GameObjects.Image;
     gameOverText : Phaser.GameObjects.Text;
 
-    constructor ()
-    {
+    constructor () {
         super('GameOver');
     }
 
-    create ()
-    {
-        this.camera = this.cameras.main
-        this.camera.setBackgroundColor(0xff0000);
-
-        this.background = this.add.image(512, 384, 'background');
-        this.background.setAlpha(0.5);
-
-        this.gameOverText = this.add.text(512, 384, 'Game Over', {
-            fontFamily: 'Arial Black', fontSize: 64, color: '#ffffff',
-            stroke: '#000000', strokeThickness: 8,
-            align: 'center'
-        }).setOrigin(0.5).setDepth(100);
-        
-        EventBus.emit('current-scene-ready', this);
+    preload () {
+        this.gameOverText = this.add.text(
+            this.cameras.main.centerX,
+            this.cameras.main.centerY,
+            "Game Over! Aperte espaço \n para começar novamente",
+            {
+                fontFamily: "Arial",
+                fontSize: 32,
+            }
+        );
+        this.gameOverText.setOrigin(0.5, 0.5);
     }
 
-    changeScene ()
-    {
+    create() {
+        EventBus.emit("current-scene-ready", this);
+
+        this.input.keyboard?.on("keyup", (event: KeyboardEvent) => {
+            if (event.code === "Space") {
+                this.changeScene();
+            }
+        });
+    }
+
+    changeScene () {
         this.scene.start('MainMenu');
     }
 }
