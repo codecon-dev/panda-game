@@ -1,9 +1,9 @@
+import { AUTO, Game } from "phaser";
+
 import { Boot } from "./scenes/Boot";
 import { GameOver } from "./scenes/GameOver";
 import { Game as MainGame } from "./scenes/Game";
 import { MainMenu } from "./scenes/MainMenu";
-import { AUTO, Game } from "phaser";
-import { Preloader } from "./scenes/Preloader";
 
 export const GLOBAL_GRAVITY_Y = 300
 
@@ -24,7 +24,7 @@ const config: Phaser.Types.Core.GameConfig = {
             debug: false,
         },
     },
-    scene: [Boot, Preloader, MainMenu, MainGame, GameOver],
+    scene: [Boot, MainMenu, MainGame, GameOver],
 };
 
 const StartGame = (parent: string) => {

@@ -1,6 +1,6 @@
-export class Preloader extends Phaser.Scene {
+export class Boot extends Phaser.Scene {
     constructor() {
-        super("Preloader");
+        super("Boot");
     }
 
     preload() {
