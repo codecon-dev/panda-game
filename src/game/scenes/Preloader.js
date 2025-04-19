@@ -4,7 +4,8 @@ export class Preloader extends Phaser.Scene {
     }
 
     preload() {
-        this.load.setBaseURL("/");
+
+        this.load.setBaseURL(process.env.NEXT_PUBLIC_BASE_URL || "/");
 
         this.load.image("running-1", "assets/running-1.png");
         this.load.image("running-2", "assets/running-2.png");
