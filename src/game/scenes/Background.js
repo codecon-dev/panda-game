@@ -2,7 +2,7 @@ import { Scene } from "phaser";
 
 import Cloud from "./../gameobjects/Cloud";
 
-export class Background extends Scene {
+export default class Background extends Scene {
     constructor() {
         super("Background");
         this.clouds;
