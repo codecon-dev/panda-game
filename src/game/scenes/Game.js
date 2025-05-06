@@ -15,19 +15,24 @@ export class Game extends Scene {
 
     preload() {
         this.load.image("cloud", "assets/cloud.png");
+        this.load.image("road", "assets/road.png");
     }
 
     create() {
         this.camera = this.cameras.main;
         this.camera.setBackgroundColor("#353946");
 
-        this.ground = this.add.rectangle(
+        this.ground = this.add.tileSprite(
             this.scale.width / 2,
             this.scale.height - 20,
             this.scale.width,
-            40,
-            0x444444
+            20,
+            "road"
         );
+
+        this.ground.setScale(1, 1);
+
+        this.ground.setOrigin(0.5, 0.5);
 
         this.physics.add.existing(this.ground, true);
 
@@ -56,6 +61,10 @@ export class Game extends Scene {
 
     update(time, delta) {
         this.clouds.forEach((cloud) => cloud.update());
+
+        if (this.ground) {
+            this.ground.tilePositionX += 2;
+        }
 
         if (this.player) {
             this.player.update();
