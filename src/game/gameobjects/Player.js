@@ -1,4 +1,5 @@
 import { GameObjects, Physics } from "phaser";
+import GameConfig from "../config/GameConfig";
 
 export default class Player extends Phaser.Physics.Arcade.Sprite {
     constructor(scene) {
@@ -109,7 +110,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
                         duck.destroy();
                         this.activateSpecialRun();
                         if (scene.score !== undefined) {
-                            scene.score += 50;
+                            scene.score += GameConfig.score.duckBonus;
                         }
                     }
                 });
@@ -197,7 +198,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         }
         
         // Cria o texto de contagem regressiva no centro da tela
-        let remainingSeconds = 3;
+        let remainingSeconds = GameConfig.powerUps.duckEffectDuration;
         this.countdownText = this.scene.add.text(
             this.scene.cameras.main.width / 2,
             this.scene.cameras.main.height / 2,
@@ -224,11 +225,11 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
                 }
                 // Na última iteração (0), não remove o texto ainda, deixa para o final do efeito
             },
-            repeat: 2
+            repeat: GameConfig.powerUps.duckEffectDuration - 1
         });
         
-        // Timer para encerrar o efeito após 3 segundos
-        this.specialRunTimeout = this.scene.time.delayedCall(3000, () => {
+        // Timer para encerrar o efeito após o tempo configurado
+        this.specialRunTimeout = this.scene.time.delayedCall(GameConfig.powerUps.duckEffectDuration * 1000, () => {
             this.isSpecialRunning = false;
             this.play("running", true);
             

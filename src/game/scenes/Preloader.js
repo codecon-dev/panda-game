@@ -6,15 +6,29 @@ export class Preloader extends Phaser.Scene {
     }
 
     preload() {
+        // Define cor de fundo preta para a tela de loading
+        this.cameras.main.setBackgroundColor('#000000');
+        
         this.load.setBaseURL("http://localhost:8080");
-        this.loadText = this.add.text(512, 360, "Loading ...", {
+        
+        // Posiciona o texto no centro das dimensões do jogo (640x360)
+        this.loadText = this.add.text(this.scale.width / 2, this.scale.height / 2, "Loading ...", {
             fontFamily: "Arial",
-            fontSize: 74,
-            color: "#e3f2ed",
+            fontSize: 50,
+            color: "#ffffff",
         });
         this.loadText.setOrigin(0.5);
         this.loadText.setStroke("#203c5b", 6);
         this.loadText.setShadow(2, 2, "#2d2d2d", 4, true, false);
+
+        // Animação de pulso no texto de loading
+        this.tweens.add({
+            targets: this.loadText,
+            scale: 1.1,
+            duration: 800,
+            yoyo: true,
+            repeat: -1
+        });
 
         this.load.image("running-1", "assets/running-1.png");
         this.load.image("running-2", "assets/running-2.png");

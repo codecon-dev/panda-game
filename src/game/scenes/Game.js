@@ -1,6 +1,7 @@
 import { Scene } from "phaser";
 
 import { EventBus } from "./../EventBus";
+import GameConfig from "./../config/GameConfig";
 
 import Player from "./../gameobjects/Player";
 import Cloud from "./../gameobjects/Cloud";
@@ -20,6 +21,9 @@ export class Game extends Scene {
     }
 
     create() {
+        // Configura a gravidade para esta cena específica
+        this.physics.world.gravity.y = 300;
+        
         this.camera = this.cameras.main;
         this.camera.setBackgroundColor("#353946");
 
@@ -66,15 +70,20 @@ export class Game extends Scene {
         this.mothsStarted = false; // Flag para controlar quando as mariposas começam a aparecer
         this.spawnLadybug();
         
-        // A mariposa só será iniciada quando o jogador atingir 300 pontos
-        // Removido o spawn inicial: this.time.delayedCall(Phaser.Math.Between(1500, 3500) / this.gameSpeed, () => {
+        // A mariposa só será iniciada quando o jogador atingir a pontuação configurada
+        // this.time.delayedCall(Phaser.Math.Between(1500, 3500) / this.gameSpeed, () => {
         //    this.spawnMoth();
         // });
         
-        this.time.delayedCall(Phaser.Math.Between(2000, 4000) / this.gameSpeed, () => {
+        this.time.delayedCall(Phaser.Math.Between(
+            GameConfig.enemies.spawnTime.beetle.min, 
+            GameConfig.enemies.spawnTime.beetle.max) / this.gameSpeed, () => {
             this.spawnBeetle();
         });
-        this.time.delayedCall(Phaser.Math.Between(2500, 4500) / this.gameSpeed, () => {
+        
+        this.time.delayedCall(Phaser.Math.Between(
+            GameConfig.enemies.spawnTime.cockroach.min, 
+            GameConfig.enemies.spawnTime.cockroach.max) / this.gameSpeed, () => {
             this.spawnCockroach();
         });
 
@@ -82,7 +91,7 @@ export class Game extends Scene {
         this.lastDuckScore = 0;
 
         this.score = 0;
-        this.lives = 10;
+        this.lives = GameConfig.gameplay.startingLives;
         this.scoreText = this.add.text(this.scale.width - 40, 20, this.formatScore(0), {
             fontFamily: 'Arial',
             fontSize: 35,
@@ -328,27 +337,29 @@ export class Game extends Scene {
     }
 
     incrementScore() {
-        this.score += 10; // Aumentado de 1 para 10 pontos
+        this.score += GameConfig.score.basePoints;
         
-        // Verifica se a pontuação atingiu 300 pontos para começar a spawnar mariposas
-        if (this.score >= 2000 && this.moths.length === 0 && !this.mothsStarted) {
+        // Verifica se a pontuação atingiu o limite para começar a spawnar mariposas
+        if (this.score >= GameConfig.enemies.mothStartScore && this.moths.length === 0 && !this.mothsStarted) {
             this.mothsStarted = true; // Flag para garantir que o primeiro spawn ocorra apenas uma vez
             console.log("Mariposas começaram a aparecer!");
-            this.time.delayedCall(Phaser.Math.Between(1500, 3500) / this.gameSpeed, () => {
+            this.time.delayedCall(Phaser.Math.Between(
+                GameConfig.enemies.spawnTime.moth.min, 
+                GameConfig.enemies.spawnTime.moth.max) / this.gameSpeed, () => {
                 this.spawnMoth();
             });
         }
         
-        // Aumenta velocidade em 2% a cada 50 pontos
-        if (this.score % 50 === 0) { // Ajustado para manter a mesma frequência (antes era a cada 5 pontos, agora a cada 50)
-            this.gameSpeed *= 1.02; // Aumenta 2%
+        // Aumenta velocidade conforme configuração
+        if (this.score % GameConfig.gameplay.speedIncreaseInterval === 0) {
+            this.gameSpeed *= GameConfig.gameplay.speedMultiplier;
             console.log(`Velocidade aumentada para: ${this.gameSpeed.toFixed(2)}x`);
         }
         
-        // Exibe animação de +10 acima do player
+        // Exibe animação de pontos acima do player
         if (this.player) {
             // Usa texto estilizado em vez das imagens
-            const scoreText = this.add.text(this.player.x, this.player.y - 50, "+10", {
+            const scoreText = this.add.text(this.player.x, this.player.y - 50, `+${GameConfig.score.basePoints}`, {
                 fontFamily: 'Arial',
                 fontSize: 24,
                 color: '#ffdd00', // Amarelo brilhante
@@ -371,10 +382,11 @@ export class Game extends Scene {
                 }
             });
         }
-        // Lógica do pato: a cada 20 pontos ganhos (antes era a cada 2 pontos)
-        if (this.score - this.lastDuckScore >= 100) {
+        
+        // Lógica do pato: verifica spawn conforme configuração
+        if (this.score - this.lastDuckScore >= GameConfig.powerUps.duckCheckInterval) {
             this.lastDuckScore = this.score;
-            if (Phaser.Math.Between(1, 100) <= 3) { // 3% chance
+            if (Phaser.Math.Between(1, 100) <= GameConfig.powerUps.duckSpawnChance) {
                 this.spawnDuck();
             }
         }
