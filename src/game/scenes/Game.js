@@ -24,9 +24,9 @@ export class Game extends Scene {
 
         this.ground = this.add.tileSprite(
             this.scale.width / 2,
-            this.scale.height - 20,
+            this.scale.height - 50,
             this.scale.width,
-            20,
+            0,
             "road"
         );
 
