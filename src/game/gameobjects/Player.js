@@ -53,10 +53,8 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 
             this.anims.stop();
             this.play("jumping", true);
-
-            console.log("Jumping animation started");
         } else {
-            console.log("Não pode pular - está no ar");
+            console.error("Não pode pular - está no ar");
         }
     }
 
@@ -67,7 +65,6 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 
             this.anims.stop();
             this.play("crouching");
-            console.log("Agachou")
         }
     }
 
