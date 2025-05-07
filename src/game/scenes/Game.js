@@ -73,6 +73,21 @@ export class Game extends Scene {
             this.spawnCockroach();
         });
 
+        this.score = 0;
+        this.lives = 10;
+        this.scoreText = this.add.text(this.scale.width - 40, 20, this.formatScore(0), {
+            fontFamily: 'Arial',
+            fontSize: 35,
+            color: '#fff',
+            align: 'right',
+        }).setOrigin(1, 0);
+        this.livesText = this.add.text(40, 20, this.lives.toString(), {
+            fontFamily: 'Arial',
+            fontSize: 35,
+            color: '#fff',
+            align: 'left',
+        }).setOrigin(0, 0);
+
         EventBus.emit("current-scene-ready", this);
     }
 
@@ -95,6 +110,10 @@ export class Game extends Scene {
         // Atualiza e move as ladybugs
         this.ladybugs.forEach((ladybug, idx) => {
             ladybug.x -= 4;
+            if (ladybug.x < this.player.x - 32 && !ladybug.passed && !ladybug.hitPlayer) {
+                this.incrementScore();
+                ladybug.passed = true;
+            }
             if (ladybug.x < -ladybug.width) {
                 ladybug.destroy();
                 this.ladybugs.splice(idx, 1);
@@ -107,6 +126,10 @@ export class Game extends Scene {
         // Atualiza e move as moths
         this.moths.forEach((moth, idx) => {
             moth.x -= 4;
+            if (moth.x < this.player.x - 32 && !moth.passed && !moth.hitPlayer) {
+                this.incrementScore();
+                moth.passed = true;
+            }
             if (moth.x < -moth.width) {
                 moth.destroy();
                 this.moths.splice(idx, 1);
@@ -119,6 +142,10 @@ export class Game extends Scene {
         // Atualiza e move os beetles
         this.beetles.forEach((beetle, idx) => {
             beetle.x -= 4;
+            if (beetle.x < this.player.x - 32 && !beetle.passed && !beetle.hitPlayer) {
+                this.incrementScore();
+                beetle.passed = true;
+            }
             if (beetle.x < -beetle.width) {
                 beetle.destroy();
                 this.beetles.splice(idx, 1);
@@ -131,6 +158,10 @@ export class Game extends Scene {
         // Atualiza e move as cockroaches
         this.cockroaches.forEach((cockroach, idx) => {
             cockroach.x -= 4;
+            if (cockroach.x < this.player.x - 32 && !cockroach.passed && !cockroach.hitPlayer) {
+                this.incrementScore();
+                cockroach.passed = true;
+            }
             if (cockroach.x < -cockroach.width) {
                 cockroach.destroy();
                 this.cockroaches.splice(idx, 1);
@@ -139,6 +170,10 @@ export class Game extends Scene {
                 });
             }
         });
+
+        // Atualiza o texto da pontuação
+        this.scoreText.setText(this.formatScore(this.score));
+        this.livesText.setText(this.lives.toString());
     }
 
     changeScene() {
@@ -172,7 +207,7 @@ export class Game extends Scene {
     spawnMoth() {
         const x = this.scale.width + 32;
         // Altura fixa para a moth
-        const y = this.scale.height - 40 - 32 - 30; // valor fixo acima do chão, 10px mais alto
+        const y = this.scale.height - 40 - 32 - 60; // valor fixo acima do chão, 10px mais alto que antes
         if (!this.isFarFromOtherBugs(x, y)) {
             this.time.delayedCall(500, () => this.spawnMoth());
             return;
@@ -219,5 +254,13 @@ export class Game extends Scene {
         cockroach.setOrigin(0.5, 0.5);
         cockroach.setDepth(2);
         this.cockroaches.push(cockroach);
+    }
+
+    incrementScore() {
+        this.score += 1;
+    }
+
+    formatScore(score) {
+        return score.toString().padStart(4, '0');
     }
 }

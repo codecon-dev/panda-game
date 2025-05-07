@@ -9,8 +9,9 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         scene.add.existing(this);
         scene.physics.add.existing(this).setCollideWorldBounds(true);
 
-        this.body.setGravityY(500);
-        this.body.setSize(64, 64);
+        this.body.setGravityY(300 * 1.9);
+        this.body.setSize(60 * 0.7, 60 * 0.7);
+        this.body.setOffset((60 - 60 * 0.7) / 2, (60 - 60 * 0.7) / 2);
 
         this.isAlive = true;
 
@@ -61,14 +62,33 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
             let isHit = false;
             [scene.ladybugs, scene.moths, scene.beetles, scene.cockroaches].forEach((group) => {
                 group.forEach((sprite) => {
-                    if (Phaser.Geom.Intersects.RectangleToRectangle(this.getBounds(), sprite.getBounds())) {
+                    const playerCenter = { x: this.x, y: this.y };
+                    const bugCenter = { x: sprite.x, y: sprite.y };
+                    const dist = Phaser.Math.Distance.Between(playerCenter.x, playerCenter.y, bugCenter.x, bugCenter.y);
+                    // Se for moth, estiver abaixado e no chão, ignora colisão
+                    if (
+                        group === scene.moths &&
+                        (this.down.isDown || this.sKey.isDown) &&
+                        this.body.onFloor()
+                    ) {
+                        // Ignora colisão com moth
+                        return;
+                    }
+                    if (dist <= 50) {
                         isHit = true;
+                        if (!sprite.hitPlayer) {
+                            scene.lives = Math.max(0, scene.lives - 1);
+                            sprite.hitPlayer = true;
+                        }
                     }
                 });
             });
             if (isHit) {
-                if (!this.anims.currentAnim || this.anims.currentAnim.key !== "hit") {
-                    this.play("hit", true);
+                // Se for moth, estiver abaixado e no chão, não faz animação de hit
+                if (!((this.down.isDown || this.sKey.isDown) && this.body.onFloor() && scene.moths.some(sprite => Phaser.Math.Distance.Between(this.x, this.y, sprite.x, sprite.y) <= 50))) {
+                    if (!this.anims.currentAnim || this.anims.currentAnim.key !== "hit") {
+                        this.play("hit", true);
+                    }
                 }
             } else {
                 // Volta para animação normal
@@ -87,21 +107,15 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
                 this.jump();
             }
 
-            // Aumenta a velocidade de queda se estiver pulando e pressionar S ou seta para baixo
-            if (!this.body.onFloor() && (this.down.isDown || this.sKey.isDown)) {
-                if (this.body.velocity.y < 0) {
-                    // Está subindo, não aumenta a queda
-                } else {
-                    // Está caindo
-                    this.body.setVelocityY(this.body.velocity.y * 1.3);
-                }
-            }
-
             if (this.down.isDown || this.sKey.isDown) {
                 if (!this.anims.currentAnim || this.anims.currentAnim.key !== "crouching") {
                     this.play("crouching", true);
                 }
+                // Não alterar offset ou size que mudem a posição visual
+                // Apenas animação
                 return;
+            } else {
+                // Não alterar offset ou size
             }
         }
     }
