@@ -63,10 +63,14 @@ export class Game extends Scene {
         this.moths = [];
         this.beetles = [];
         this.cockroaches = [];
+        this.mothsStarted = false; // Flag para controlar quando as mariposas começam a aparecer
         this.spawnLadybug();
-        this.time.delayedCall(Phaser.Math.Between(1500, 3500) / this.gameSpeed, () => {
-            this.spawnMoth();
-        });
+        
+        // A mariposa só será iniciada quando o jogador atingir 300 pontos
+        // Removido o spawn inicial: this.time.delayedCall(Phaser.Math.Between(1500, 3500) / this.gameSpeed, () => {
+        //    this.spawnMoth();
+        // });
+        
         this.time.delayedCall(Phaser.Math.Between(2000, 4000) / this.gameSpeed, () => {
             this.spawnBeetle();
         });
@@ -99,7 +103,14 @@ export class Game extends Scene {
             color: '#fff',
             align: 'right',
         }).setOrigin(1, 0);
-
+        
+        // Adiciona a lua no canto superior direito, abaixo do marcador de velocidade
+        this.moon = this.add.image(this.scale.width - 250, 90, 'moon');
+        this.moon.setOrigin(0.5);
+        this.moon.setScale(1); // Escala da lua
+        this.moon.setDepth(0); // Profundidade menor para que as nuvens passem na frente
+        this.moonSpeed = 0.2; // Velocidade lenta de movimento da lua
+        
         EventBus.emit("current-scene-ready", this);
     }
 
@@ -109,6 +120,22 @@ export class Game extends Scene {
     }
 
     update(time, delta) {
+        // Verifica se o jogador perdeu todas as vidas
+        if (this.lives <= 0) {
+            this.changeScene();
+            return;
+        }
+        
+        // Atualiza a posição da lua (movimento lento para a esquerda)
+        if (this.moon) {
+            this.moon.x -= this.moonSpeed;
+            
+            // Se a lua sair completamente pela esquerda, reposiciona na direita
+            if (this.moon.x < -this.moon.width / 2) {
+                this.moon.x = this.scale.width + this.moon.width / 2;
+            }
+        }
+        
         this.clouds.forEach((cloud) => cloud.update());
 
         if (this.road) {
@@ -137,23 +164,25 @@ export class Game extends Scene {
             }
         });
 
-        // Atualiza e move as moths
-        this.moths.forEach((moth, idx) => {
-            moth.x -= 4 * this.gameSpeed;
-            if (moth.x < this.player.x - 32 && !moth.passed && !moth.hitPlayer) {
-                this.incrementScore();
-                moth.passed = true;
-            }
-            if (moth.x < -moth.width) {
-                moth.destroy();
-                this.moths.splice(idx, 1);
-                // Ajusta o tempo de spawn com base na velocidade
-                const spawnTime = Phaser.Math.Between(1500, 3500) / this.gameSpeed;
-                this.time.delayedCall(spawnTime, () => {
-                    this.spawnMoth();
-                });
-            }
-        });
+        // Atualiza e move as moths (apenas se já atingiu 300 pontos)
+        if (this.mothsStarted) {
+            this.moths.forEach((moth, idx) => {
+                moth.x -= 4 * this.gameSpeed;
+                if (moth.x < this.player.x - 32 && !moth.passed && !moth.hitPlayer) {
+                    this.incrementScore();
+                    moth.passed = true;
+                }
+                if (moth.x < -moth.width) {
+                    moth.destroy();
+                    this.moths.splice(idx, 1);
+                    // Ajusta o tempo de spawn com base na velocidade
+                    const spawnTime = Phaser.Math.Between(1500, 3500) / this.gameSpeed;
+                    this.time.delayedCall(spawnTime, () => {
+                        this.spawnMoth();
+                    });
+                }
+            });
+        }
 
         // Atualiza e move os beetles
         this.beetles.forEach((beetle, idx) => {
@@ -207,7 +236,10 @@ export class Game extends Scene {
     }
 
     changeScene() {
-        this.scene.start("GameOver");
+        // Reset da velocidade do jogo para 1 (velocidade inicial)
+        this.gameSpeed = 1;
+        
+        this.scene.start("GameOver", { score: this.score });
     }
 
     // Função utilitária para checar distância mínima entre bugs
@@ -218,7 +250,7 @@ export class Game extends Scene {
             ...this.beetles,
             ...this.cockroaches
         ];
-        return allBugs.every(bug => Phaser.Math.Distance.Between(x, y, bug.x, bug.y) >= 200);
+        return allBugs.every(bug => Phaser.Math.Distance.Between(x, y, bug.x, bug.y) >= 300);
     }
 
     spawnLadybug() {
@@ -296,45 +328,53 @@ export class Game extends Scene {
     }
 
     incrementScore() {
-        this.score += 1;
+        this.score += 10; // Aumentado de 1 para 10 pontos
         
-        // Aumenta velocidade em 2% a cada 5 pontos
-        if (this.score % 5 === 0) {
+        // Verifica se a pontuação atingiu 300 pontos para começar a spawnar mariposas
+        if (this.score >= 2000 && this.moths.length === 0 && !this.mothsStarted) {
+            this.mothsStarted = true; // Flag para garantir que o primeiro spawn ocorra apenas uma vez
+            console.log("Mariposas começaram a aparecer!");
+            this.time.delayedCall(Phaser.Math.Between(1500, 3500) / this.gameSpeed, () => {
+                this.spawnMoth();
+            });
+        }
+        
+        // Aumenta velocidade em 2% a cada 50 pontos
+        if (this.score % 50 === 0) { // Ajustado para manter a mesma frequência (antes era a cada 5 pontos, agora a cada 50)
             this.gameSpeed *= 1.02; // Aumenta 2%
             console.log(`Velocidade aumentada para: ${this.gameSpeed.toFixed(2)}x`);
         }
         
-        // Exibe animação de +1 acima do player
+        // Exibe animação de +10 acima do player
         if (this.player) {
-            const oneFrames = ["one-8", "one-16", "one-16"];
-            let frameIdx = 0;
-            const oneSprite = this.add.image(this.player.x, this.player.y - 50, oneFrames[frameIdx]);
-            oneSprite.setOrigin(0.5, 1);
-            oneSprite.setDepth(20);
-            let elapsed = 0;
-            const frameDuration = 700; // ms
-            const totalDuration = 2100; // ms
-            const followAndAnimate = () => {
-                if (!oneSprite.active) return;
-                oneSprite.setPosition(this.player.x, this.player.y - 50);
-                const newFrameIdx = Math.min(Math.floor(elapsed / frameDuration), 2);
-                if (newFrameIdx !== frameIdx) {
-                    frameIdx = newFrameIdx;
-                    oneSprite.setTexture(oneFrames[frameIdx]);
+            // Usa texto estilizado em vez das imagens
+            const scoreText = this.add.text(this.player.x, this.player.y - 50, "+10", {
+                fontFamily: 'Arial',
+                fontSize: 24,
+                color: '#ffdd00', // Amarelo brilhante
+                stroke: '#000000',
+                strokeThickness: 4,
+                align: 'center'
+            });
+            scoreText.setOrigin(0.5, 1);
+            scoreText.setDepth(20);
+            
+            // Animação de subida e desaparecimento
+            this.tweens.add({
+                targets: scoreText,
+                y: scoreText.y - 50, // Move para cima
+                alpha: 0, // Desaparece gradualmente
+                duration: 1500,
+                ease: 'Power1',
+                onComplete: () => {
+                    scoreText.destroy();
                 }
-                elapsed += 16;
-                if (elapsed < totalDuration) {
-                    this.time.delayedCall(16, followAndAnimate);
-                } else {
-                    oneSprite.destroy();
-                }
-            };
-            followAndAnimate();
+            });
         }
-        // Lógica do pato: a cada 2 pontos ganhos
-        if (this.score - this.lastDuckScore >= 2) {
+        // Lógica do pato: a cada 20 pontos ganhos (antes era a cada 2 pontos)
+        if (this.score - this.lastDuckScore >= 100) {
             this.lastDuckScore = this.score;
-            if (Phaser.Math.Between(1, 100) <= 20) { // 20% chance
+            if (Phaser.Math.Between(1, 100) <= 3) { // 3% chance
                 this.spawnDuck();
             }
         }

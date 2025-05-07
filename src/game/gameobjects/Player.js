@@ -87,6 +87,13 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
                         if (!sprite.hitPlayer) {
                             scene.lives = Math.max(0, scene.lives - 1);
                             sprite.hitPlayer = true;
+                            
+                            // Verifica se as vidas chegaram a zero para encerrar o jogo
+                            if (scene.lives <= 0) {
+                                scene.time.delayedCall(500, () => { // Pequeno delay para mostrar a animação de hit
+                                    scene.changeScene();
+                                });
+                            }
                         }
                     }
                 });
@@ -102,7 +109,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
                         duck.destroy();
                         this.activateSpecialRun();
                         if (scene.score !== undefined) {
-                            scene.score += 5;
+                            scene.score += 50;
                         }
                     }
                 });

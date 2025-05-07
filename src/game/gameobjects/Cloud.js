@@ -8,7 +8,7 @@ export default class Cloud extends Phaser.GameObjects.Image {
 
         this.speed = 2;
         this.setScale(0.5 + Math.random() * 0.5);
-        this.setDepth(0);
+        this.setDepth(1);
         this.setAlpha(0.8);
 
         this.move();
