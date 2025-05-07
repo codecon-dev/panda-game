@@ -13,6 +13,8 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         this.body.setSize(64, 64);
 
         this.isAlive = true;
+        this.isCrouching = false;
+        this.crouchTimer = 0;
 
         this.spacebar = this.scene.input.keyboard.addKey(
             Phaser.Input.Keyboard.KeyCodes.SPACE
@@ -29,6 +31,8 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 
     start() {
         this.isAlive = true;
+        this.isCrouching = false;
+        this.crouchTimer = 0;
         this.play("running", true);
     }
 
@@ -45,9 +49,18 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         }
     }
 
-    crouch() {}
+    crouch() {
+        if (!this.isCrouching) {
+            this.isCrouching = true;
+            this.crouchTimer = this.scene.time.now;
 
-    die() {}
+            this.anims.stop();
+            this.play("crouching");
+            console.log("Agachou")
+        }
+    }
+
+    die() { }
 
     update() {
         if (this.isAlive) {
@@ -55,10 +68,22 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
                 this.jump();
             }
 
+            if (Phaser.Input.Keyboard.JustDown(this.down)) {
+                this.crouch();
+            }
+
             if (
                 this.body.touching.down &&
                 this.anims.currentAnim.key !== "running"
             ) {
+                this.play("running", true);
+            }
+
+            const crouchElapsed = this.scene.time.now - this.crouchTimer;
+
+            if (this.isCrouching && crouchElapsed > 1000) {
+                this.isCrouching = false;
+                this.anims.stop();
                 this.play("running", true);
             }
         }
