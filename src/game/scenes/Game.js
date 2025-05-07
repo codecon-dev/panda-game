@@ -12,6 +12,7 @@ export class Game extends Scene {
         this.player;
         this.ground;
         this.road;
+        this.gameSpeed = 1; // Velocidade inicial do jogo
     }
 
     preload() {
@@ -63,15 +64,18 @@ export class Game extends Scene {
         this.beetles = [];
         this.cockroaches = [];
         this.spawnLadybug();
-        this.time.delayedCall(Phaser.Math.Between(1500, 3500), () => {
+        this.time.delayedCall(Phaser.Math.Between(1500, 3500) / this.gameSpeed, () => {
             this.spawnMoth();
         });
-        this.time.delayedCall(Phaser.Math.Between(2000, 4000), () => {
+        this.time.delayedCall(Phaser.Math.Between(2000, 4000) / this.gameSpeed, () => {
             this.spawnBeetle();
         });
-        this.time.delayedCall(Phaser.Math.Between(2500, 4500), () => {
+        this.time.delayedCall(Phaser.Math.Between(2500, 4500) / this.gameSpeed, () => {
             this.spawnCockroach();
         });
+
+        this.ducks = [];
+        this.lastDuckScore = 0;
 
         this.score = 0;
         this.lives = 10;
@@ -87,6 +91,14 @@ export class Game extends Scene {
             color: '#fff',
             align: 'left',
         }).setOrigin(0, 0);
+        
+        // Adiciona texto para a velocidade atual
+        this.speedText = this.add.text(this.scale.width - 40, 60, `Vel: 1.00x`, {
+            fontFamily: 'Arial',
+            fontSize: 20,
+            color: '#fff',
+            align: 'right',
+        }).setOrigin(1, 0);
 
         EventBus.emit("current-scene-ready", this);
     }
@@ -100,7 +112,7 @@ export class Game extends Scene {
         this.clouds.forEach((cloud) => cloud.update());
 
         if (this.road) {
-            this.road.tilePositionX += 4;
+            this.road.tilePositionX += 4 * this.gameSpeed;
         }
 
         if (this.player) {
@@ -109,7 +121,7 @@ export class Game extends Scene {
 
         // Atualiza e move as ladybugs
         this.ladybugs.forEach((ladybug, idx) => {
-            ladybug.x -= 4;
+            ladybug.x -= 4 * this.gameSpeed;
             if (ladybug.x < this.player.x - 32 && !ladybug.passed && !ladybug.hitPlayer) {
                 this.incrementScore();
                 ladybug.passed = true;
@@ -117,7 +129,9 @@ export class Game extends Scene {
             if (ladybug.x < -ladybug.width) {
                 ladybug.destroy();
                 this.ladybugs.splice(idx, 1);
-                this.time.delayedCall(Phaser.Math.Between(1000, 3000), () => {
+                // Ajusta o tempo de spawn com base na velocidade
+                const spawnTime = Phaser.Math.Between(1000, 3000) / this.gameSpeed;
+                this.time.delayedCall(spawnTime, () => {
                     this.spawnLadybug();
                 });
             }
@@ -125,7 +139,7 @@ export class Game extends Scene {
 
         // Atualiza e move as moths
         this.moths.forEach((moth, idx) => {
-            moth.x -= 4;
+            moth.x -= 4 * this.gameSpeed;
             if (moth.x < this.player.x - 32 && !moth.passed && !moth.hitPlayer) {
                 this.incrementScore();
                 moth.passed = true;
@@ -133,7 +147,9 @@ export class Game extends Scene {
             if (moth.x < -moth.width) {
                 moth.destroy();
                 this.moths.splice(idx, 1);
-                this.time.delayedCall(Phaser.Math.Between(1500, 3500), () => {
+                // Ajusta o tempo de spawn com base na velocidade
+                const spawnTime = Phaser.Math.Between(1500, 3500) / this.gameSpeed;
+                this.time.delayedCall(spawnTime, () => {
                     this.spawnMoth();
                 });
             }
@@ -141,7 +157,7 @@ export class Game extends Scene {
 
         // Atualiza e move os beetles
         this.beetles.forEach((beetle, idx) => {
-            beetle.x -= 4;
+            beetle.x -= 4 * this.gameSpeed;
             if (beetle.x < this.player.x - 32 && !beetle.passed && !beetle.hitPlayer) {
                 this.incrementScore();
                 beetle.passed = true;
@@ -149,7 +165,9 @@ export class Game extends Scene {
             if (beetle.x < -beetle.width) {
                 beetle.destroy();
                 this.beetles.splice(idx, 1);
-                this.time.delayedCall(Phaser.Math.Between(2000, 4000), () => {
+                // Ajusta o tempo de spawn com base na velocidade
+                const spawnTime = Phaser.Math.Between(2000, 4000) / this.gameSpeed;
+                this.time.delayedCall(spawnTime, () => {
                     this.spawnBeetle();
                 });
             }
@@ -157,7 +175,7 @@ export class Game extends Scene {
 
         // Atualiza e move as cockroaches
         this.cockroaches.forEach((cockroach, idx) => {
-            cockroach.x -= 4;
+            cockroach.x -= 4 * this.gameSpeed;
             if (cockroach.x < this.player.x - 32 && !cockroach.passed && !cockroach.hitPlayer) {
                 this.incrementScore();
                 cockroach.passed = true;
@@ -165,15 +183,27 @@ export class Game extends Scene {
             if (cockroach.x < -cockroach.width) {
                 cockroach.destroy();
                 this.cockroaches.splice(idx, 1);
-                this.time.delayedCall(Phaser.Math.Between(2500, 4500), () => {
+                // Ajusta o tempo de spawn com base na velocidade
+                const spawnTime = Phaser.Math.Between(2500, 4500) / this.gameSpeed;
+                this.time.delayedCall(spawnTime, () => {
                     this.spawnCockroach();
                 });
+            }
+        });
+
+        // Atualiza e move os ducks
+        this.ducks.forEach((duck, idx) => {
+            duck.x -= 4 * this.gameSpeed;
+            if (duck.x < -duck.width) {
+                duck.destroy();
+                this.ducks.splice(idx, 1);
             }
         });
 
         // Atualiza o texto da pontuação
         this.scoreText.setText(this.formatScore(this.score));
         this.livesText.setText(this.lives.toString());
+        this.speedText.setText(`Vel: ${this.gameSpeed.toFixed(2)}x`);
     }
 
     changeScene() {
@@ -195,7 +225,7 @@ export class Game extends Scene {
         const x = this.scale.width + 32;
         const y = this.scale.height - 40 - 16;
         if (!this.isFarFromOtherBugs(x, y)) {
-            this.time.delayedCall(500, () => this.spawnLadybug());
+            this.time.delayedCall(500 / this.gameSpeed, () => this.spawnLadybug());
             return;
         }
         const ladybug = this.add.sprite(x, y, "ladybug");
@@ -209,7 +239,7 @@ export class Game extends Scene {
         // Altura fixa para a moth
         const y = this.scale.height - 40 - 32 - 60; // valor fixo acima do chão, 10px mais alto que antes
         if (!this.isFarFromOtherBugs(x, y)) {
-            this.time.delayedCall(500, () => this.spawnMoth());
+            this.time.delayedCall(500 / this.gameSpeed, () => this.spawnMoth());
             return;
         }
         const moth = this.add.sprite(x, y, "moth-1");
@@ -234,7 +264,7 @@ export class Game extends Scene {
         const x = this.scale.width + 32;
         const y = this.scale.height - 40 - 16;
         if (!this.isFarFromOtherBugs(x, y)) {
-            this.time.delayedCall(500, () => this.spawnBeetle());
+            this.time.delayedCall(500 / this.gameSpeed, () => this.spawnBeetle());
             return;
         }
         const beetle = this.add.sprite(x, y, "beetle");
@@ -247,7 +277,7 @@ export class Game extends Scene {
         const x = this.scale.width + 32;
         const y = this.scale.height - 40 - 16;
         if (!this.isFarFromOtherBugs(x, y)) {
-            this.time.delayedCall(500, () => this.spawnCockroach());
+            this.time.delayedCall(500 / this.gameSpeed, () => this.spawnCockroach());
             return;
         }
         const cockroach = this.add.sprite(x, y, "cockroach");
@@ -256,8 +286,24 @@ export class Game extends Scene {
         this.cockroaches.push(cockroach);
     }
 
+    spawnDuck() {
+        const x = this.scale.width + 32;
+        const y = this.scale.height - 40 - 16; // topo do chão
+        const duck = this.add.sprite(x, y, "duck");
+        duck.setOrigin(0.5, 0.5);
+        duck.setDepth(2);
+        this.ducks.push(duck);
+    }
+
     incrementScore() {
         this.score += 1;
+        
+        // Aumenta velocidade em 2% a cada 5 pontos
+        if (this.score % 5 === 0) {
+            this.gameSpeed *= 1.02; // Aumenta 2%
+            console.log(`Velocidade aumentada para: ${this.gameSpeed.toFixed(2)}x`);
+        }
+        
         // Exibe animação de +1 acima do player
         if (this.player) {
             const oneFrames = ["one-8", "one-16", "one-16"];
@@ -266,8 +312,8 @@ export class Game extends Scene {
             oneSprite.setOrigin(0.5, 1);
             oneSprite.setDepth(20);
             let elapsed = 0;
-            const frameDuration = 100; // ms
-            const totalDuration = 500; // ms
+            const frameDuration = 700; // ms
+            const totalDuration = 2100; // ms
             const followAndAnimate = () => {
                 if (!oneSprite.active) return;
                 oneSprite.setPosition(this.player.x, this.player.y - 50);
@@ -284,6 +330,13 @@ export class Game extends Scene {
                 }
             };
             followAndAnimate();
+        }
+        // Lógica do pato: a cada 2 pontos ganhos
+        if (this.score - this.lastDuckScore >= 2) {
+            this.lastDuckScore = this.score;
+            if (Phaser.Math.Between(1, 100) <= 20) { // 20% chance
+                this.spawnDuck();
+            }
         }
     }
 

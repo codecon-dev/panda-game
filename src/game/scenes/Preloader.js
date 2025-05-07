@@ -33,6 +33,9 @@ export class Preloader extends Phaser.Scene {
         this.load.image("zero-24", "assets/zero-24.png");
         this.load.image("one-8", "assets/one-8.png");
         this.load.image("one-16", "assets/one-16.png");
+        this.load.image("duck", "assets/duck.png");
+        this.load.image("running-special-1", "assets/running-special-1.png");
+        this.load.image("running-special-2", "assets/running-special-2.png");
     }
 
     create() {
@@ -74,6 +77,16 @@ export class Preloader extends Phaser.Scene {
             ],
             frameRate: 1.5, // 3 frames em 2 segundos (cada frame ~0.66s)
             repeat: 0,
+        });
+
+        this.anims.create({
+            key: "running-special",
+            frames: [
+                { key: "running-special-1" },
+                { key: "running-special-2" }
+            ],
+            frameRate: 10,
+            repeat: -1,
         });
 
         this.scene.start("MainMenu");

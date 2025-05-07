@@ -60,7 +60,12 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 
     update() {
         if (this.isAlive) {
-            // Verifica colisão com insetos
+            // PRIORIDADE: modo especial
+            if (this.isSpecialRunning) {
+                this.play("running-special", true);
+                return;
+            }
+            // Verifica colisão com bugs
             const scene = this.scene;
             let isHit = false;
             [scene.ladybugs, scene.moths, scene.beetles, scene.cockroaches].forEach((group) => {
@@ -86,6 +91,22 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
                     }
                 });
             });
+            // Verifica colisão com duck (bônus)
+            if (scene.ducks) {
+                scene.ducks.forEach((duck) => {
+                    const playerCenter = { x: this.x, y: this.y };
+                    const duckCenter = { x: duck.x, y: duck.y };
+                    const dist = Phaser.Math.Distance.Between(playerCenter.x, playerCenter.y, duckCenter.x, duckCenter.y);
+                    if (dist <= 50 && !duck.collected) {
+                        duck.collected = true;
+                        duck.destroy();
+                        this.activateSpecialRun();
+                        if (scene.score !== undefined) {
+                            scene.score += 5;
+                        }
+                    }
+                });
+            }
             if (isHit) {
                 // Se for moth, estiver abaixado e no chão, não faz animação de hit
                 if (!((this.down.isDown || this.sKey.isDown) && this.body.onFloor() && scene.moths.some(sprite => Phaser.Math.Distance.Between(this.x, this.y, sprite.x, sprite.y) <= 50))) {
@@ -151,5 +172,70 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
                 // Não alterar offset ou size
             }
         }
+    }
+
+    activateSpecialRun() {
+        if (this.specialRunTimeout) {
+            this.scene.time.removeEvent(this.specialRunTimeout);
+        }
+        
+        // Limpa qualquer contador anterior
+        if (this.countdownText) {
+            this.countdownText.destroy();
+        }
+        
+        this.isSpecialRunning = true;
+        if (!this.anims.currentAnim || this.anims.currentAnim.key !== "running-special") {
+            this.play("running-special", true);
+        }
+        
+        // Cria o texto de contagem regressiva no centro da tela
+        let remainingSeconds = 3;
+        this.countdownText = this.scene.add.text(
+            this.scene.cameras.main.width / 2,
+            this.scene.cameras.main.height / 2,
+            remainingSeconds.toString(),
+            {
+                fontFamily: 'Arial',
+                fontSize: 64,
+                color: '#ffffff',
+                stroke: '#000000',
+                strokeThickness: 6,
+                shadow: { offsetX: 2, offsetY: 2, color: '#000000', blur: 2, stroke: true, fill: true }
+            }
+        );
+        this.countdownText.setOrigin(0.5);
+        this.countdownText.setDepth(100); // Certifica que fica na frente de tudo
+        
+        // Timer para atualizar a contagem a cada segundo
+        this.countdownTimer = this.scene.time.addEvent({
+            delay: 1000,
+            callback: () => {
+                remainingSeconds--;
+                if (remainingSeconds >= 0) {
+                    this.countdownText.setText(remainingSeconds.toString());
+                }
+                // Na última iteração (0), não remove o texto ainda, deixa para o final do efeito
+            },
+            repeat: 2
+        });
+        
+        // Timer para encerrar o efeito após 3 segundos
+        this.specialRunTimeout = this.scene.time.delayedCall(3000, () => {
+            this.isSpecialRunning = false;
+            this.play("running", true);
+            
+            // Remove o texto de contagem
+            if (this.countdownText) {
+                this.countdownText.destroy();
+                this.countdownText = null;
+            }
+            
+            // Para o timer de contagem, se ainda estiver ativo
+            if (this.countdownTimer) {
+                this.countdownTimer.remove();
+                this.countdownTimer = null;
+            }
+        });
     }
 }
