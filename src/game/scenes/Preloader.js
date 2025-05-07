@@ -34,7 +34,7 @@ export class Preloader extends Phaser.Scene {
 
         this.anims.create({
             key: "jumping",
-            frames: [{ key: "jumping" }, { key: "running-1" }],
+            frames: [{ key: "jumping" }],
             frameRate: 10,
             repeat: -1,
         });

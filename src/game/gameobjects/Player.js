@@ -13,6 +13,8 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         this.body.setSize(64, 64);
 
         this.isAlive = true;
+        this.isJumping = false;
+        this.jumpTimer = 0;
         this.isCrouching = false;
         this.crouchTimer = 0;
 
@@ -31,6 +33,8 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 
     start() {
         this.isAlive = true;
+        this.isJumping = false;
+        this.jumpTimer = 0;
         this.isCrouching = false;
         this.crouchTimer = 0;
         this.play("running", true);
@@ -38,12 +42,19 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 
     jump() {
         if (
-            this.body.touching.down ||
-            this.body.blocked.down ||
-            this.body.onFloor()
+            (this.body.touching.down ||
+                this.body.blocked.down ||
+                this.body.onFloor()) &&
+            !this.isJumping
         ) {
+            this.isJumping = true;
+            this.jumpTimer = this.scene.time.now;
             this.body.setVelocityY(-400);
-            this.play("jumping");
+
+            this.anims.stop();
+            this.play("jumping", true);
+
+            console.log("Jumping animation started");
         } else {
             console.log("Não pode pular - está no ar");
         }
@@ -64,7 +75,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 
     update() {
         if (this.isAlive) {
-            if (Phaser.Input.Keyboard.JustDown(this.spacebar)) {
+            if (Phaser.Input.Keyboard.JustDown(this.spacebar) || Phaser.Input.Keyboard.JustDown(this.up)) {
                 this.jump();
             }
 
@@ -72,11 +83,14 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
                 this.crouch();
             }
 
-            if (
-                this.body.touching.down &&
-                this.anims.currentAnim.key !== "running"
-            ) {
-                this.play("running", true);
+            const jumpElapsed = this.scene.time.now - this.jumpTimer;
+
+            if (this.isJumping && jumpElapsed > 100) {
+                if (this.body.touching.down || this.body.blocked.down || this.body.onFloor()) {
+                    this.isJumping = false;
+                    this.anims.stop();
+                    this.play("running", true);
+                }
             }
 
             const crouchElapsed = this.scene.time.now - this.crouchTimer;
