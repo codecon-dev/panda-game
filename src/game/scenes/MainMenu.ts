@@ -5,7 +5,7 @@ import { EventBus } from "../EventBus";
 export class MainMenu extends Scene {
     background: GameObjects.Image;
     logo: GameObjects.Image;
-    title: GameObjects.Text;
+    player: Phaser.GameObjects.Sprite;
     logoTween: Phaser.Tweens.Tween | null;
 
     constructor() {
@@ -13,24 +13,29 @@ export class MainMenu extends Scene {
     }
 
     create() {
-        // Define a cor de fundo
-        this.cameras.main.setBackgroundColor('#353946');
+        // Define a cor de fundo para escuro
+        this.cameras.main.setBackgroundColor('#000000');
 
-        // Adiciona o título
-        this.title = this.add.text(this.scale.width / 2, this.scale.height / 3, "PANDA GAME", {
-            fontFamily: "Arial",
-            fontSize: 48,
-            color: "#ffffff",
-            stroke: "#000000",
-            strokeThickness: 6,
-            align: "center"
-        });
-        this.title.setOrigin(0.5);
+        // Adiciona o panda parado na mesma posição que no jogo
+        this.player = this.add.sprite(36, this.scale.height - 40, "running-1");
+        this.player.setOrigin(0.5, 1);
+        this.player.setDepth(9);
 
-        // Adiciona instruções
-        const instructions = this.add.text(this.scale.width / 2, this.scale.height / 2, "Pressione ESPAÇO para começar", {
+        // Adiciona a estrada
+        const road = this.add.tileSprite(
+            this.scale.width / 2,
+            this.scale.height - 40,
+            this.scale.width,
+            11,
+            "road"
+        );
+        road.setOrigin(0.5, 0);
+        road.setDepth(1);
+
+        // Adiciona instruções com tamanho menor
+        const instructions = this.add.text(this.scale.width / 2, this.scale.height / 2, "Pressione ESPAÇO", {
             fontFamily: "Arial",
-            fontSize: 24,
+            fontSize: 18,
             color: "#ffffff",
             stroke: "#000000",
             strokeThickness: 4,
