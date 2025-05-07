@@ -29,12 +29,12 @@ export class Preloader extends Phaser.Scene {
             frameRate: 10,
             repeat: -1,
         });
-
+        
         this.anims.create({
             key: "jumping",
-            frames: [{ key: "jumping" }, { key: "running-1" }],
-            frameRate: 10,
-            repeat: -1,
+            frames: [{ key: "jumping" }],
+            frameRate: 1,
+            repeat: 0,
         });
 
         this.scene.start("MainMenu");

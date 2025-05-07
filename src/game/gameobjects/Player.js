@@ -39,7 +39,9 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
             this.body.onFloor()
         ) {
             this.body.setVelocityY(-400);
-            this.play("jumping");
+            if (!this.anims.currentAnim || this.anims.currentAnim.key !== "jumping") {
+                this.play("jumping", true);
+            }
         } else {
             console.log("Não pode pular - está no ar");
         }
@@ -55,11 +57,14 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
                 this.jump();
             }
 
-            if (
-                this.body.touching.down &&
-                this.anims.currentAnim.key !== "running"
-            ) {
-                this.play("running", true);
+            if (this.body.onFloor()) {
+                if (!this.anims.currentAnim || this.anims.currentAnim.key !== "running") {
+                    this.play("running", true);
+                }
+            } else {
+                if (!this.anims.currentAnim || this.anims.currentAnim.key !== "jumping") {
+                    this.play("jumping", true);
+                }
             }
         }
     }
