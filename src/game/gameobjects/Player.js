@@ -29,6 +29,9 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         );
 
         this.play("running");
+
+        this.zeroSprite = null;
+        this.zeroTimeout = null;
     }
 
     start() {
@@ -89,8 +92,38 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
                     if (!this.anims.currentAnim || this.anims.currentAnim.key !== "hit") {
                         this.play("hit", true);
                     }
+                    // Exibe as três imagens zero-8, zero-16, zero-24 acima do player por 2.1s, trocando a cada 0.7s e seguindo o player
+                    const zeroFrames = ["zero-8", "zero-16", "zero-24"];
+                    let frameIdx = 0;
+                    const zeroSprite = this.scene.add.image(this.x, this.y - 50, zeroFrames[frameIdx]);
+                    zeroSprite.setOrigin(0.5, 1);
+                    zeroSprite.setDepth(20);
+                    let elapsed = 0;
+                    const frameDuration = 100; // ms
+                    const totalDuration = 500; // ms
+                    const followAndAnimate = () => {
+                        if (!zeroSprite.active) return;
+                        zeroSprite.setPosition(this.x, this.y - 50);
+                        const newFrameIdx = Math.min(Math.floor(elapsed / frameDuration), 2);
+                        if (newFrameIdx !== frameIdx) {
+                            frameIdx = newFrameIdx;
+                            zeroSprite.setTexture(zeroFrames[frameIdx]);
+                        }
+                        elapsed += 16;
+                        if (elapsed < totalDuration) {
+                            this.scene.time.delayedCall(16, followAndAnimate);
+                        } else {
+                            zeroSprite.destroy();
+                        }
+                    };
+                    followAndAnimate();
                 }
             } else {
+                // Remove zero se não está mais em hit
+                if (this.zeroSprite) {
+                    this.zeroSprite.destroy();
+                    this.zeroSprite = null;
+                }
                 // Volta para animação normal
                 if (this.body.onFloor()) {
                     if (!this.anims.currentAnim || this.anims.currentAnim.key !== "running") {

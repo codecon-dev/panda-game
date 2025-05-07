@@ -28,6 +28,11 @@ export class Preloader extends Phaser.Scene {
         this.load.image("beetle", "assets/beetle.png");
         this.load.image("cockroach", "assets/cockroach.png");
         this.load.image("hit", "assets/hit.png");
+        this.load.image("zero-8", "assets/zero-8.png");
+        this.load.image("zero-16", "assets/zero-16.png");
+        this.load.image("zero-24", "assets/zero-24.png");
+        this.load.image("one-8", "assets/one-8.png");
+        this.load.image("one-16", "assets/one-16.png");
     }
 
     create() {
@@ -58,6 +63,17 @@ export class Preloader extends Phaser.Scene {
             frames: [{ key: "hit" }],
             frameRate: 1,
             repeat: -1,
+        });
+
+        this.anims.create({
+            key: "zero-hit",
+            frames: [
+                { key: "zero-8" },
+                { key: "zero-16" },
+                { key: "zero-24" }
+            ],
+            frameRate: 1.5, // 3 frames em 2 segundos (cada frame ~0.66s)
+            repeat: 0,
         });
 
         this.scene.start("MainMenu");

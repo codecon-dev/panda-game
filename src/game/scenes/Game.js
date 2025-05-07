@@ -258,6 +258,33 @@ export class Game extends Scene {
 
     incrementScore() {
         this.score += 1;
+        // Exibe animação de +1 acima do player
+        if (this.player) {
+            const oneFrames = ["one-8", "one-16", "one-16"];
+            let frameIdx = 0;
+            const oneSprite = this.add.image(this.player.x, this.player.y - 50, oneFrames[frameIdx]);
+            oneSprite.setOrigin(0.5, 1);
+            oneSprite.setDepth(20);
+            let elapsed = 0;
+            const frameDuration = 100; // ms
+            const totalDuration = 500; // ms
+            const followAndAnimate = () => {
+                if (!oneSprite.active) return;
+                oneSprite.setPosition(this.player.x, this.player.y - 50);
+                const newFrameIdx = Math.min(Math.floor(elapsed / frameDuration), 2);
+                if (newFrameIdx !== frameIdx) {
+                    frameIdx = newFrameIdx;
+                    oneSprite.setTexture(oneFrames[frameIdx]);
+                }
+                elapsed += 16;
+                if (elapsed < totalDuration) {
+                    this.time.delayedCall(16, followAndAnimate);
+                } else {
+                    oneSprite.destroy();
+                }
+            };
+            followAndAnimate();
+        }
     }
 
     formatScore(score) {
