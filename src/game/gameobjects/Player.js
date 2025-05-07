@@ -23,6 +23,9 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         this.down = this.scene.input.keyboard.addKey(
             Phaser.Input.Keyboard.KeyCodes.DOWN
         );
+        this.sKey = this.scene.input.keyboard.addKey(
+            Phaser.Input.Keyboard.KeyCodes.S
+        );
 
         this.play("running");
     }
@@ -55,6 +58,13 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         if (this.isAlive) {
             if (Phaser.Input.Keyboard.JustDown(this.spacebar)) {
                 this.jump();
+            }
+
+            if (this.down.isDown || this.sKey.isDown) {
+                if (!this.anims.currentAnim || this.anims.currentAnim.key !== "crouching") {
+                    this.play("crouching", true);
+                }
+                return;
             }
 
             if (this.body.onFloor()) {
