@@ -19,6 +19,8 @@ export class Preloader extends Phaser.Scene {
         this.load.image("running-1", "assets/running-1.png");
         this.load.image("running-2", "assets/running-2.png");
         this.load.image("jumping", "assets/jumping.png");
+        this.load.image("crouching-1", "assets/crouch-1.png");
+        this.load.image("crouching-2", "assets/crouch-2.png");
     }
 
     create() {
@@ -36,6 +38,13 @@ export class Preloader extends Phaser.Scene {
             frameRate: 10,
             repeat: -1,
         });
+
+        this.anims.create({
+            key: "crouching",
+            frames: [{ key: "crouching-1" }, { key: "crouching-2" }],
+            frameRate: 10,
+            repeat: -1,
+        })
 
         this.scene.start("MainMenu");
     }

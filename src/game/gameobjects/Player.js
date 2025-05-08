@@ -15,6 +15,8 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         this.isAlive = true;
         this.isJumping = false;
         this.jumpTimer = 0;
+        this.isCrouching = false;
+        this.crouchTimer = 0;
 
         this.spacebar = this.scene.input.keyboard.addKey(
             Phaser.Input.Keyboard.KeyCodes.SPACE
@@ -33,6 +35,8 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         this.isAlive = true;
         this.isJumping = false;
         this.jumpTimer = 0;
+        this.isCrouching = false;
+        this.crouchTimer = 0;
         this.play("running", true);
     }
 
@@ -49,14 +53,20 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 
             this.anims.stop();
             this.play("jumping", true);
-
-            console.log("Jumping animation started");
         } else {
-            console.log("Não pode pular - está no ar");
+            console.error("Não pode pular - está no ar");
         }
     }
 
-    crouch() { }
+    crouch() {
+        if (!this.isCrouching) {
+            this.isCrouching = true;
+            this.crouchTimer = this.scene.time.now;
+
+            this.anims.stop();
+            this.play("crouching");
+        }
+    }
 
     die() { }
 
@@ -64,6 +74,10 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         if (this.isAlive) {
             if (Phaser.Input.Keyboard.JustDown(this.spacebar) || Phaser.Input.Keyboard.JustDown(this.up)) {
                 this.jump();
+            }
+
+            if (Phaser.Input.Keyboard.JustDown(this.down)) {
+                this.crouch();
             }
 
             const jumpElapsed = this.scene.time.now - this.jumpTimer;
@@ -74,6 +88,14 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
                     this.anims.stop();
                     this.play("running", true);
                 }
+            }
+
+            const crouchElapsed = this.scene.time.now - this.crouchTimer;
+
+            if (this.isCrouching && crouchElapsed > 1000) {
+                this.isCrouching = false;
+                this.anims.stop();
+                this.play("running", true);
             }
         }
     }
