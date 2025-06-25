@@ -23,7 +23,11 @@
         "**/*.tsx",
         "src/game/scenes/Preloader.js",
         "src/game/gameobjects/Player.js",
-        "src/game/gameobjects/Player.js"
+        "src/game/gameobjects/Cloud.js",
+        "src/game/gameobjects/Cockroach.js",
+        "src/game/gameobjects/Beetle.js",
+        "src/game/gameobjects/LadyBug.js",
+        "src/game/gameobjects/Moth.js"
     ],
     "exclude": ["node_modules"]
 }

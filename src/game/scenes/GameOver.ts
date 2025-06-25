@@ -1,36 +1,83 @@
-import { EventBus } from '../EventBus';
-import { Scene } from 'phaser';
+import { EventBus } from "../EventBus";
+import { Scene } from "phaser";
 
-export class GameOver extends Scene
-{
+export class GameOver extends Scene {
     camera: Phaser.Cameras.Scene2D.Camera;
     background: Phaser.GameObjects.Image;
-    gameOverText : Phaser.GameObjects.Text;
+    gameOverImage: Phaser.GameObjects.Image;
+    pandaGameOver: Phaser.GameObjects.Sprite;
+    scoreText: Phaser.GameObjects.Text;
 
-    constructor ()
-    {
-        super('GameOver');
+    constructor() {
+        super("GameOver");
     }
 
-    create ()
-    {
-        this.camera = this.cameras.main
-        this.camera.setBackgroundColor(0xff0000);
+    create(data?: { score?: number }) {
+        this.camera = this.cameras.main;
+        this.camera.setBackgroundColor("#0301AA");
 
-        this.background = this.add.image(512, 384, 'background');
-        this.background.setAlpha(0.5);
+        // Criar animação local se não existir
+        if (!this.anims.exists("dead")) {
+            this.anims.create({
+                key: "dead",
+                frames: [{ key: "game-over" }, { key: "game-over-2" }],
+                frameRate: 3,
+                repeat: -1,
+            });
+        }
 
-        this.gameOverText = this.add.text(512, 384, 'Game Over', {
-            fontFamily: 'Arial Black', fontSize: 64, color: '#ffffff',
-            stroke: '#000000', strokeThickness: 8,
-            align: 'center'
-        }).setOrigin(0.5).setDepth(100);
-        
-        EventBus.emit('current-scene-ready', this);
+        // Imagem de fundo game over
+        this.gameOverImage = this.add.image(
+            this.scale.width / 2,
+            this.scale.height / 2 - 50,
+            "game-over-1"
+        );
+        this.gameOverImage.setOrigin(0.5);
+
+        // Score final no topo direito
+        const finalScore = data?.score || 0;
+        const highScore = parseInt(
+            localStorage.getItem("pandaHighScore") || "0"
+        );
+
+        this.scoreText = this.add.text(
+            this.scale.width - 30,
+            10,
+            `HI ${highScore.toString().padStart(5, "0")} ${finalScore
+                .toString()
+                .padStart(5, "0")}`,
+            {
+                fontFamily: "monospace",
+                fontSize: "16px",
+                color: "#FFFFFF",
+                align: "right",
+            }
+        );
+        this.scoreText.setOrigin(1, 0);
+
+        // Panda game over com animação
+        this.pandaGameOver = this.add.sprite(
+            this.scale.width / 2,
+            this.scale.height / 2 + 80,
+            "game-over"
+        );
+        this.pandaGameOver.setOrigin(0.5);
+        this.pandaGameOver.play("dead", true);
+
+        // Configura o evento de tecla para reiniciar
+        this.input.keyboard?.on("keyup", (event: KeyboardEvent) => {
+            this.changeScene();
+        });
+
+        // Também permite tocar na tela para reiniciar
+        this.input.on("pointerdown", () => {
+            this.changeScene();
+        });
+
+        EventBus.emit("current-scene-ready", this);
     }
 
-    changeScene ()
-    {
-        this.scene.start('MainMenu');
+    changeScene() {
+        this.scene.start("MainMenu");
     }
 }

@@ -14,8 +14,7 @@ export class MainMenu extends Scene {
     }
 
     create() {
-
-        this.cameras.main.setBackgroundColor('#000000');
+        this.cameras.main.setBackgroundColor("#000000");
         this.player = this.add.sprite(36, this.scale.height - 40, "running-1");
         this.player.setOrigin(0.5, 1);
         this.player.setDepth(9);
@@ -42,12 +41,6 @@ export class MainMenu extends Scene {
             this.clouds.push(cloud);
         }
 
-        // Configura o evento de tecla
-        this.input.keyboard?.on("keyup", (event: KeyboardEvent) => {
-            if (event.code === "Space") {
-                this.changeScene();
-            }
-        });
         EventBus.emit("current-scene-ready", this);
     }
 
